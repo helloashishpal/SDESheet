@@ -1,0 +1,79 @@
+#define pii pair<int,int>
+class Solution {
+public:
+    int row,col;
+    int maxsum(vector<vector<int>>& matrix,vector<vector<pii>>prefix,int k,int si,int sj,int ei,int ej,int sum){
+        if(sum<=k)return sum;
+        int ans=INT_MIN;
+        // If top row could be removed
+        if(si+1<=ei){
+            int nsum;
+            if(sj==0){
+                nsum=sum-prefix[si][ej].first;
+            }
+            else{
+                nsum=sum-(prefix[si][ej].first-prefix[si][sj-1].first);
+            }
+            ans=max(ans,maxsum(matrix,prefix,k,si+1,sj,ei,ej,nsum));
+        }
+        // If bottom row could be removed
+        if(ei-1>=si){
+            int nsum;
+            if(sj==0){
+                nsum=sum-prefix[ei][ej].first;
+            }
+            else{
+                nsum=sum-(prefix[ei][ej].first-prefix[ei][sj-1].first);
+            }
+            ans=max(ans,maxsum(matrix,prefix,k,si,sj,ei-1,ej,nsum));
+        }
+        // If left col could be removed
+        if(sj+1<=ej){
+            int nsum;
+            if(si==0){
+                nsum=sum-prefix[ei][sj].second;
+            }
+            else{
+                nsum=sum-(prefix[ei][sj].second-prefix[si-1][sj].second);
+            }
+            ans=max(ans,maxsum(matrix,prefix,k,si,sj+1,ei,ej,nsum));
+        }
+        // If right col could be removed
+        if(ej-1>=sj){
+            int nsum;
+            if(si==0){
+                nsum=sum-prefix[ei][ej].second;
+            }
+            else{
+                nsum=sum-(prefix[ei][ej].second-prefix[si-1][ej].second);
+            }
+            ans=max(ans,maxsum(matrix,prefix,k,si,sj,ei,ej-1,nsum));
+        }
+        return ans;
+    }
+    int maxSumSubmatrix(vector<vector<int>>& matrix, int k) {
+        row=matrix.size();
+        col=matrix[0].size();
+        vector<vector<pii>>prefix(row,vector<pii>(col));
+        prefix[0][0]={matrix[0][0],matrix[0][0]};
+        // prefix.first represents Horizontal prefix sum
+        for(int j=1;j<col;j++)prefix[0][j]={matrix[0][j]+prefix[0][j-1].first,matrix[0][j]};
+        // prefix.second represents vertical prefix sum                                    
+        for(int i=1;i<row;i++)prefix[i][0]={matrix[i][0],matrix[i][0]+prefix[i-1][0].second};
+        int sum=prefix[row-1][0].second;
+        // cout<<sum<<endl;
+        for(int i=1;i<row;i++){
+            for(int j=1;j<col;j++){
+                prefix[i][j]={(matrix[i][j]+prefix[i][j-1].first),(matrix[i][j]+prefix[i-1][j].second)};
+                if(i==row-1){
+                    sum+=prefix[i][j].second;
+                    // cout<<sum;
+                }
+            }
+        }
+        if(row==1)sum=prefix[row-1][col-1].first;
+        if(col==1)sum=prefix[row-1][col-1].second;
+        // return sum;
+        return sum<=k?sum:maxsum(matrix,prefix,k,0,0,row-1,col-1,sum);
+    }
+};
